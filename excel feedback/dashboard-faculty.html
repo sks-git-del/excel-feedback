@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - Feedback Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Faculty Dashboard Page -->
+    <div id="faculty-page" class="page">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-container">
+                <h1 class="navbar-title">Faculty Dashboard</h1>
+                <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container dashboard-container">
+            <!-- Create Form Section -->
+            <div class="section">
+                <h2>Create New Feedback Form</h2>
+                <div class="form-card">
+                    <form id="create-form" onsubmit="handleCreateForm(event)">
+                        <div class="form-group">
+                            <label for="subject-name">Subject Name</label>
+                            <input 
+                                type="text" 
+                                id="subject-name" 
+                                placeholder="e.g., Data Structures" 
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-semester">Semester</label>
+                            <select id="subject-semester" required>
+                                <option value="">-- Choose Semester --</option>
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="apps-script-url">Google Apps Script Web App URL</label>
+                            <input 
+                                type="url" 
+                                id="apps-script-url" 
+                                value="https://script.google.com/macros/s/AKfycbymdViCClx6266NT7VTnnEqKvUekf7RI61mfwWmHphHiG4rIymTlF02g1wReX3y0Ubzmg/exec"
+                                placeholder="Auto-configured"
+                                readonly
+                                required
+                            >
+                            <small class="info-text">Auto configured. No need to edit.</small>
+                        </div>
+                        <div class="subject-actions" style="margin-bottom: 12px;">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="openManualFormTools()">Open Google Form Builder</button>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="openManualSheetTool()">Open Google Sheet</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="create-form-btn">Create Form</button>
+                    </form>
+
+                    <hr style="margin: 18px 0; border: 1px solid #d7e2ef;">
+
+                    <h3 style="margin-bottom: 10px;">Manual Fallback (Save Existing Links)</h3>
+                    <p class="info-text" style="margin-bottom: 10px;">If auto-create fails, create form/sheet manually in Google and paste links here.</p>
+                    <form id="manual-form" onsubmit="handleManualCreateForm(event)">
+                        <div class="form-group">
+                            <label for="manual-form-link">Google Form Link</label>
+                            <input
+                                type="url"
+                                id="manual-form-link"
+                                placeholder="https://docs.google.com/forms/..."
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="manual-sheet-link">Google Sheet Link</label>
+                            <input
+                                type="url"
+                                id="manual-sheet-link"
+                                placeholder="https://docs.google.com/spreadsheets/..."
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Manual Form</button>
+                    </form>
+                </div>
+                <div id="create-message" class="message"></div>
+            </div>
+
+            <!-- My Forms Section -->
+            <div class="section">
+                <h2>My Feedback Forms</h2>
+
+                <div class="form-card" style="margin-bottom: 14px;">
+                    <h3 style="margin-bottom: 10px;">Feedback Analytics</h3>
+                    <p id="faculty-visual-summary" class="info-text" style="margin-bottom: 12px;">Loading visualization...</p>
+                    <div class="subject-actions" style="margin-bottom: 12px;">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="recalculateAllFacultyAverages()">Recalculate All Averages</button>
+                    </div>
+                    <div class="chart-grid">
+                        <div class="chart-card">
+                            <h4>Responses by Subject</h4>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="faculty-subject-feedback-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>Last 7 Days Responses</h4>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="faculty-feedback-trend-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="loading" class="loading" style="display: none;">
+                    <p>Loading your forms...</p>
+                </div>
+
+                <!-- Forms List -->
+                <div id="forms-grid" class="forms-grid">
+                    <!-- Forms will be loaded here by JavaScript -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <p>You haven't created any feedback forms yet. Create one to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="faculty-message" class="message"></div>
+    </div>
+
+    <!-- Firebase SDK (Compat for global firebase.* API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/faculty.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Initialize Faculty Dashboard -->
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeFacultyDashboard);
+    </script>
+</body>
+</html>

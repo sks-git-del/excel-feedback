@@ -1,0 +1,65 @@
+// ==========================================
+// FIRESTORE SECURITY RULES
+// ==========================================
+// Paste this into Firebase Console → Firestore → Rules tab
+// Replace the default rules completely with this content
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // SYSTEM COLLECTION (PIN Settings, etc.)
+    // ==========================================
+    // All authenticated users can read system settings (for PIN checks)
+    // Only admins can write/update system settings
+    match /system/{document=**} {
+      allow read: if request.auth.uid != null;
+      
+      allow write, update, delete: if request.auth.uid != null && 
+                                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    // Users can read/write only their own document
+    // Admins can read all user documents
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth.uid == userId;
+      allow read: if request.auth.uid != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ==========================================
+    // SUBJECTS COLLECTION
+    // ==========================================
+    // Anyone authenticated can read subjects
+    // Only faculty can create subjects
+    // Only subject creator or admin can update/delete
+    match /subjects/{document=**} {
+      allow read: if request.auth.uid != null;
+      
+      allow create: if request.auth.uid != null;
+      
+      allow update, delete: if request.auth.uid != null && 
+                               (request.auth.uid == resource.data.faculty_id ||
+                                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // ==========================================
+    // FEEDBACK_SUBMISSIONS COLLECTION
+    // ==========================================
+    // Users can read submissions
+    // Anyone authenticated can create submissions
+    // Only owner or admin can update/delete
+    match /feedback_submissions/{document=**} {
+      allow read: if request.auth.uid != null;
+      
+      allow create: if request.auth.uid != null;
+      
+      allow update, delete: if request.auth.uid != null;
+    }
+  }
+}

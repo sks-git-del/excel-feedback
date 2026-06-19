@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Student Feedback Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Login</h2>
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-username">Username or Recovery Email</label>
+                        <input 
+                            type="text"
+                            id="login-username"
+                            placeholder="Enter username or email"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="password-field-wrapper">
+                            <input
+                                type="password"
+                                id="login-password"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">Show</button>
+                        </div>
+                    </div>
+                    <div id="pin-section" class="form-group" style="display: none;">
+                        <label for="login-pin">Security PIN</label>
+                        <input
+                            type="password"
+                            id="login-pin"
+                            placeholder="Enter security PIN"
+                            maxlength="6"
+                            pattern="[0-9]{4,6}"
+                        >
+                        <small id="pin-help-text" style="color: #666; margin-top: 5px; display: block;"></small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="login-btn">Login</button>
+                </form>
+                <div class="forgot-password-row">
+                    <button type="button" class="link-button" onclick="toggleForgotPasswordSection()">Forgot Password?</button>
+                </div>
+                <div id="forgot-password-section" class="forgot-password-section hidden">
+                    <div class="form-group">
+                        <label for="forgot-username">Username or Recovery Email</label>
+                        <input
+                            type="text"
+                            id="forgot-username"
+                            placeholder="Enter username or email to reset password"
+                        >
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-block" onclick="handleForgotPassword()">Send Reset Link</button>
+                    <div id="forgot-message" class="message"></div>
+                </div>
+                <p class="auth-switch">
+                    Don't have an account? <a href="#" onclick="navigateTo('signup')">Sign Up</a>
+                </p>
+                <div id="login-message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compat for global firebase.* API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        // Initialize PIN system when login page loads
+        async function initLoginPage() {
+            console.log('Login page initializing...');
+            
+            // Show PIN field by default (it will be hidden for students when they enter username)
+            const pinSection = document.getElementById('pin-section');
+            if (pinSection) {
+                pinSection.style.display = 'block';
+                console.log('PIN section visible by default');
+            }
+            
+            // Initialize PIN settings in database
+            try {
+                await initializePinSettings();
+                console.log('PIN settings initialized');
+            } catch (e) {
+                console.warn('PIN initialization delayed (will try on login):', e);
+            }
+            
+            // Add event listener to check PIN requirement when username changes
+            const usernameField = document.getElementById('login-username');
+            if (usernameField) {
+                usernameField.addEventListener('input', handlePasswordInput);
+                usernameField.addEventListener('blur', handlePasswordInput);
+                console.log('Username input listener added');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', initLoginPage);
+    </script>
+</body>
+</html>

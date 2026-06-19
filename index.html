@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feedback Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Index/Home Page -->
+    <div id="home-page" class="page">
+        <div class="container">
+            <div class="landing-hero">
+                <section class="hero-shell">
+                    <div class="hero-pill">Campus Quality Intelligence</div>
+                    <div class="hero-grid">
+                        <div>
+                            <h1 class="main-title">Professional Student Feedback Platform</h1>
+                            <p class="subtitle">Collect structured feedback, generate department-ready reports, and improve teaching outcomes with role-based workflows.</p>
+                            <div class="cta-buttons">
+                                <button class="btn btn-primary" onclick="navigateTo('login')">Login</button>
+                                <button class="btn btn-secondary" onclick="navigateTo('signup')">Create Account</button>
+                            </div>
+                            <div class="hero-stats">
+                                <div class="stat-box">
+                                    <h3>3 Roles</h3>
+                                    <p>Student, Faculty, Admin</p>
+                                </div>
+                                <div class="stat-box">
+                                    <h3>Live Reports</h3>
+                                    <p>Google Sheets integrated</p>
+                                </div>
+                                <div class="stat-box">
+                                    <h3>Secure</h3>
+                                    <p>Firebase Auth + Firestore</p>
+                                </div>
+                            </div>
+                        </div>
+                        <aside class="hero-card">
+                            <h3>Why this system works</h3>
+                            <ul class="hero-list">
+                                <li>One-click form generation for faculty</li>
+                                <li>One response per student per subject</li>
+                                <li>Semester-based visibility and access</li>
+                                <li>Centralized admin controls and reports</li>
+                            </ul>
+                        </aside>
+                    </div>
+                </section>
+                <div class="cta-buttons mt-20">
+                    <button class="btn btn-primary" onclick="navigateTo('login')">Get Started</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Student Feedback Management System. All rights reserved.</p>
+    </footer>
+
+    <!-- Firebase SDK (Compat for global firebase.* API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

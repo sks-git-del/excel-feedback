@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Feedback Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Admin Dashboard Page -->
+    <div id="admin-page" class="page">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-container">
+                <h1 class="navbar-title">Admin Dashboard</h1>
+                <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container dashboard-container">
+            <!-- Tabs Section -->
+            <div class="tabs">
+                <button class="tab-button active" onclick="showTab('subjects-tab')">All Subjects</button>
+                <button class="tab-button" onclick="showTab('users-tab')">Manage Users</button>
+                <button class="tab-button" onclick="showTab('security-tab')">🔒 Security & PIN</button>
+            </div>
+
+            <!-- Subjects Tab -->
+            <div id="subjects-tab" class="tab-content active">
+                <h2>All Subjects & Reports</h2>
+
+                <div class="form-card" style="margin: 0 0 14px 0;">
+                    <h3 style="margin-bottom: 10px;">System Analytics</h3>
+                    <p id="admin-visual-summary" class="info-text" style="margin-bottom: 12px;">Loading visualization...</p>
+                    <div class="subject-actions" style="margin-bottom: 12px;">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="recalculateAllAdminAverages()">Recalculate All Averages</button>
+                    </div>
+                    <div class="chart-grid">
+                        <div class="chart-card">
+                            <h4>User Role Distribution</h4>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="admin-role-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>Users by Semester</h4>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="admin-semester-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card chart-card-wide">
+                            <h4>Feedback Responses by Subject</h4>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="admin-feedback-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section" style="margin: 14px 0 18px;">
+                    <h2>Create New Feedback Form (Automated)</h2>
+                    <div class="form-card">
+                        <form id="admin-create-form" onsubmit="handleAdminCreateForm(event)">
+                            <div class="form-group">
+                                <label for="admin-subject-name-auto">Subject Name</label>
+                                <input 
+                                    type="text" 
+                                    id="admin-subject-name-auto" 
+                                    placeholder="e.g., Data Structures" 
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-subject-semester-auto">Semester</label>
+                                <select id="admin-subject-semester-auto" required>
+                                    <option value="">-- Choose Semester --</option>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                    <option value="3">3rd Semester</option>
+                                    <option value="4">4th Semester</option>
+                                    <option value="5">5th Semester</option>
+                                    <option value="6">6th Semester</option>
+                                    <option value="7">7th Semester</option>
+                                    <option value="8">8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-name-auto">Faculty Name (Teacher)</label>
+                                <input 
+                                    type="text" 
+                                    id="admin-faculty-name-auto" 
+                                    placeholder="Faculty name" 
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-apps-script-url">Google Apps Script Web App URL</label>
+                                <input 
+                                    type="url" 
+                                    id="admin-apps-script-url" 
+                                    value="https://script.google.com/macros/s/AKfycbymdViCClx6266NT7VTnnEqKvUekf7RI61mfwWmHphHiG4rIymTlF02g1wReX3y0Ubzmg/exec"
+                                    placeholder="Auto-configured"
+                                    readonly
+                                    required
+                                >
+                                <small class="info-text">Auto configured. No need to edit.</small>
+                            </div>
+                            <div class="subject-actions" style="margin-bottom: 12px;">
+                                <button type="button" class="btn btn-secondary btn-small" onclick="openManualFormToolsAdmin()">Open Google Form Builder</button>
+                                <button type="button" class="btn btn-secondary btn-small" onclick="openManualSheetToolAdmin()">Open Google Sheet</button>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="admin-create-form-btn">Create Form</button>
+                        </form>
+
+                        <hr style="margin: 18px 0; border: 1px solid #d7e2ef;">
+
+                        <h3 style="margin-bottom: 10px;">Manual Fallback (Save Existing Links)</h3>
+                        <p class="info-text" style="margin-bottom: 10px;">If auto-create fails, create form/sheet manually in Google and paste links here.</p>
+                        <form id="admin-manual-fallback-form" onsubmit="handleAdminManualFallbackForm(event)">
+                            <div class="form-group">
+                                <label for="admin-manual-form-link">Google Form Link</label>
+                                <input
+                                    type="url"
+                                    id="admin-manual-form-link"
+                                    placeholder="https://docs.google.com/forms/..."
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-manual-sheet-link">Google Sheet Link</label>
+                                <input
+                                    type="url"
+                                    id="admin-manual-sheet-link"
+                                    placeholder="https://docs.google.com/spreadsheets/..."
+                                    required
+                                >
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Manual Form</button>
+                        </form>
+                    </div>
+                    <div id="admin-create-message" class="message"></div>
+                </div>
+
+                <div class="section" style="margin: 14px 0 18px;">
+                    <h2>Subject Wise Feedback Summary</h2>
+                    <div class="form-card" style="padding: 0; overflow: hidden;">
+                        <div style="padding: 18px 18px 0 18px;">
+                            <p class="info-text" style="margin-bottom: 12px;">Each subject is shown as a separate row with its own average score, response count, and download actions.</p>
+                        </div>
+                        <div id="admin-subjects-summary-loading" class="loading" style="display: none; padding-top: 0;">
+                            <p>Loading subject-wise summary...</p>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Faculty</th>
+                                        <th>Semester</th>
+                                        <th>Average Score</th>
+                                        <th>Responses</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-subjects-summary-body">
+                                    <tr>
+                                        <td colspan="6">No subjects loaded yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section" style="margin: 14px 0 18px;">
+                    <h3 style="margin-bottom: 10px;">Manual Google Form Entry (Admin - Legacy)</h3>
+                    <p class="info-text" style="margin-bottom: 10px;">Use this when Apps Script auto-generation is unavailable.</p>
+                    <div class="subject-actions" style="margin-bottom: 12px;">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="openManualFormToolsAdmin()">Open Google Form Builder</button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="openManualSheetToolAdmin()">Open Google Sheet</button>
+                    </div>
+                    <div class="form-card">
+                        <form id="admin-manual-form" onsubmit="handleAdminManualCreateForm(event)">
+                            <div class="form-group">
+                                <label for="admin-subject-name">Subject Name</label>
+                                <input type="text" id="admin-subject-name" placeholder="e.g., Operating Systems" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-subject-semester">Semester</label>
+                                <select id="admin-subject-semester" required>
+                                    <option value="">-- Choose Semester --</option>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                    <option value="3">3rd Semester</option>
+                                    <option value="4">4th Semester</option>
+                                    <option value="5">5th Semester</option>
+                                    <option value="6">6th Semester</option>
+                                    <option value="7">7th Semester</option>
+                                    <option value="8">8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-name">Faculty Name</label>
+                                <input type="text" id="admin-faculty-name" placeholder="Faculty name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-form-link">Google Form Link</label>
+                                <input type="url" id="admin-form-link" placeholder="https://docs.google.com/forms/..." required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-sheet-link">Google Sheet Link</label>
+                                <input type="url" id="admin-sheet-link" placeholder="https://docs.google.com/spreadsheets/..." required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Manual Subject</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="subjects-loading" class="loading" style="display: none;">
+                    <p>Loading subjects...</p>
+                </div>
+
+                <!-- Subjects Grid -->
+                <div id="all-subjects-grid" class="subjects-grid">
+                    <!-- Subjects will be loaded here by JavaScript -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="subjects-empty" class="empty-state" style="display: none;">
+                    <p>No subjects found in the system.</p>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content" style="display: none;">
+                <h2>System Users</h2>
+
+                <div class="chart-grid" style="margin-bottom: 14px;">
+                    <div class="form-card">
+                        <h3 style="margin-bottom: 10px;">Add New Faculty</h3>
+                        <form id="admin-add-faculty-form" onsubmit="handleAdminCreateFaculty(event)">
+                            <div class="form-group">
+                                <label for="admin-faculty-fullname">Full Name</label>
+                                <input type="text" id="admin-faculty-fullname" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-username">Username</label>
+                                <input type="text" id="admin-faculty-username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-email">Email</label>
+                                <input type="email" id="admin-faculty-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-password">Password</label>
+                                <input type="password" id="admin-faculty-password" minlength="6" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-semester">Semester</label>
+                                <select id="admin-faculty-semester" required>
+                                    <option value="">-- Choose Semester --</option>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                    <option value="3">3rd Semester</option>
+                                    <option value="4">4th Semester</option>
+                                    <option value="5">5th Semester</option>
+                                    <option value="6">6th Semester</option>
+                                    <option value="7">7th Semester</option>
+                                    <option value="8">8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-branch">Branch</label>
+                                <input type="text" id="admin-faculty-branch" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-faculty-subject">Primary Subject</label>
+                                <input type="text" id="admin-faculty-subject" placeholder="e.g., Database Management Systems">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Faculty</button>
+                        </form>
+                    </div>
+
+                    <div class="form-card">
+                        <h3 style="margin-bottom: 10px;">Add New Student</h3>
+                        <form id="admin-add-student-form" onsubmit="handleAdminCreateStudent(event)">
+                            <div class="form-group">
+                                <label for="admin-student-fullname">Full Name</label>
+                                <input type="text" id="admin-student-fullname" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-student-username">Username</label>
+                                <input type="text" id="admin-student-username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-student-email">Email</label>
+                                <input type="email" id="admin-student-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-student-password">Password</label>
+                                <input type="password" id="admin-student-password" minlength="6" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-student-semester">Semester</label>
+                                <select id="admin-student-semester" required>
+                                    <option value="">-- Choose Semester --</option>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                    <option value="3">3rd Semester</option>
+                                    <option value="4">4th Semester</option>
+                                    <option value="5">5th Semester</option>
+                                    <option value="6">6th Semester</option>
+                                    <option value="7">7th Semester</option>
+                                    <option value="8">8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-student-branch">Branch</label>
+                                <input type="text" id="admin-student-branch" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Student</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="users-loading" class="loading" style="display: none;">
+                    <p>Loading users...</p>
+                </div>
+
+                <!-- Users Table -->
+                <div id="users-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Semester</th>
+                                <th>Branch</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <!-- Users will be loaded here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="users-empty" class="empty-state" style="display: none;">
+                    <p>No users found in the system.</p>
+                </div>
+            </div>
+
+            <!-- Security & PIN Tab -->
+            <div id="security-tab" class="tab-content" style="display: none;">
+                <h2>🔒 Security & PIN Management</h2>
+
+                <!-- PIN System Status -->
+                <div class="form-card" style="margin: 0 0 14px 0;">
+                    <h3 style="margin-bottom: 10px;">PIN System Status</h3>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input 
+                                type="checkbox" 
+                                id="pin-enabled-checkbox"
+                                onchange="handleTogglePinSystem(event)"
+                                style="width: auto; margin: 0;"
+                            >
+                            <span>Enable PIN Security System</span>
+                        </label>
+                        <small style="color: #666; margin-top: 8px; display: block;">
+                            When enabled, all users must enter a security PIN in addition to their password.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Admin PIN Management -->
+                <div class="form-card" style="margin: 0 0 14px 0;">
+                    <h3 style="margin-bottom: 10px;">⚙️ Admin PIN</h3>
+                    <p class="info-text" style="margin-bottom: 10px;">
+                        This PIN is required for all admin accounts to login.
+                    </p>
+                    <form id="admin-pin-form" onsubmit="handleUpdateAdminPin(event)">
+                        <div class="form-group">
+                            <label for="new-admin-pin">New Admin PIN (4-6 digits)</label>
+                            <input 
+                                type="password" 
+                                id="new-admin-pin" 
+                                placeholder="e.g., 1234"
+                                maxlength="6"
+                                pattern="[0-9]{4,6}"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-admin-pin">Confirm PIN</label>
+                            <input 
+                                type="password" 
+                                id="confirm-admin-pin" 
+                                placeholder="Re-enter PIN"
+                                maxlength="6"
+                                pattern="[0-9]{4,6}"
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Admin PIN</button>
+                    </form>
+                </div>
+
+                <!-- Faculty PIN Management -->
+                <div class="form-card" style="margin: 0 0 14px 0;">
+                    <h3 style="margin-bottom: 10px;">👨‍🏫 Faculty PIN</h3>
+                    <p class="info-text" style="margin-bottom: 10px;">
+                        This PIN is required for all faculty members to login. (Students do NOT need PIN - they only use password)
+                    </p>
+                    <form id="faculty-pin-form" onsubmit="handleUpdateFacultyPin(event)">
+                        <div class="form-group">
+                            <label for="new-faculty-pin">New Faculty PIN (4-6 digits)</label>
+                            <input 
+                                type="password" 
+                                id="new-faculty-pin" 
+                                placeholder="e.g., 5678"
+                                maxlength="6"
+                                pattern="[0-9]{4,6}"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-faculty-pin">Confirm PIN</label>
+                            <input 
+                                type="password" 
+                                id="confirm-faculty-pin" 
+                                placeholder="Re-enter PIN"
+                                maxlength="6"
+                                pattern="[0-9]{4,6}"
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Faculty PIN</button>
+                    </form>
+                </div>
+
+                <!-- PIN Information -->
+                <div class="form-card" style="margin: 0;">
+                    <h3 style="margin-bottom: 10px;">ℹ️ PIN Information</h3>
+                    <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; font-size: 14px;">
+                        <p style="margin: 0 0 8px 0; font-weight: 500;">PIN System Features:</p>
+                        <ul style="margin: 5px 0 0 20px; padding: 0;">
+                            <li>✓ Extra security layer for Faculty and Admin accounts</li>
+                            <li>✓ All admins use one PIN, all faculty use one PIN</li>
+                            <li>✓ <strong>Students do NOT need PIN</strong> - password only</li>
+                            <li>✓ PIN must be 4-6 digits (numbers only)</li>
+                            <li>✓ PIN is required in addition to password for Faculty & Admin</li>
+                            <li>✓ You (admin) can change both PINs anytime</li>
+                            <li>✓ PIN system can be toggled on/off at any time</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Message Display -->
+                <div id="pin-message" class="message"></div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="admin-message" class="message"></div>
+    </div>
+
+    <!-- Firebase SDK (Compat for global firebase.* API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Initialize Admin Dashboard -->
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeAdminDashboard);
+    </script>
+</body>
+</html>

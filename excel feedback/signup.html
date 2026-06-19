@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Student Feedback Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sign Up Page -->
+    <div id="signup-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Create Account</h2>
+                <form id="signup-form" onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="signup-name" 
+                            placeholder="Enter your full name" 
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-username">Username</label>
+                        <input 
+                            type="text"
+                            id="signup-username"
+                            placeholder="Choose a username (letters and numbers)"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Recovery Email</label>
+                        <input 
+                            type="email"
+                            id="signup-email"
+                            placeholder="Enter email for password reset"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <div class="password-field-wrapper">
+                            <input
+                                type="password"
+                                id="signup-password"
+                                placeholder="Enter your password (min. 6 characters)"
+                                required
+                            >
+                            <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">Show</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-role">Select Role</label>
+                        <select id="signup-role" required>
+                            <option value="">-- Choose Role --</option>
+                            <option value="student">Student</option>
+                            <option value="faculty">Faculty</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div id="semester-branch-container" style="display: none;">
+                        <div class="form-group">
+                            <label for="signup-semester">Semester</label>
+                            <select id="signup-semester">
+                                <option value="">-- Choose Semester --</option>
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-branch">Branch</label>
+                            <input 
+                                type="text" 
+                                id="signup-branch" 
+                                placeholder="e.g., Computer Science, Electronics" 
+                            >
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signup-btn">Sign Up</button>
+                </form>
+                <p class="auth-switch">
+                    Already have an account? <a href="#" onclick="navigateTo('login')">Login</a>
+                </p>
+                <div id="signup-message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compat for global firebase.* API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - Feedback Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Faculty Dashboard Page -->
+    <div id="faculty-page" class="page">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-container">
+                <div>
+                    <h1 class="navbar-title">Faculty Dashboard</h1>
+                    <p id="faculty-info" style="color:#666;font-size:0.9rem;margin:0"></p>
+                </div>
+                <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container dashboard-container">
+            <!-- Create Form Section -->
+            <div class="section">
+                <h2>Create New Feedback Form</h2>
+                <div class="form-card">
+                    <form id="create-form" onsubmit="handleCreateForm(event)">
+                        <div class="form-group">
+                            <label for="create-subject-select">Select Subject</label>
+                            <select id="create-subject-select" required>
+                                <option value="">-- Select Subject --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-form-type">Select Form Type</label>
+                            <select id="create-form-type" required>
+                                <option value="">-- Select Form Type --</option>
+                                <option value="all">All 3 Forms (Recommended)</option>
+                                <option value="teaching">Teaching Feedback</option>
+                                <option value="co">CO Attainment</option>
+                                <option value="gap">Gap Analysis</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-semester">Semester</label>
+                            <select id="subject-semester" required>
+                                <option value="">-- Choose Semester --</option>
+                                <option value="1">1st Semester</option>
+                                <option value="2">2nd Semester</option>
+                                <option value="3">3rd Semester</option>
+                                <option value="4">4th Semester</option>
+                                <option value="5">5th Semester</option>
+                                <option value="6">6th Semester</option>
+                                <option value="7">7th Semester</option>
+                                <option value="8">8th Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="apps-script-url">Google Apps Script Web App URL</label>
+                            <input 
+                                type="url" 
+                                id="apps-script-url" 
+                                value="https://script.google.com/macros/s/AKfycby65gOZUHhjvl8CKts5Akrwp3bdTRXrDiQA5dt0Jhge2k1D03sdGJRUEDlNyeoDP8xVfA/exec"
+                                placeholder="Auto-configured"
+                                readonly
+                                required
+                            >
+                            <small class="info-text">Auto configured. No need to edit.</small>
+                        </div>
+                        <div class="subject-actions" style="margin-bottom: 12px;">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="openManualFormTools()">Open Google Form Builder</button>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="openManualSheetTool()">Open Google Sheet</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="create-form-btn">Create Form</button>
+                    </form>
+
+                    <hr style="margin: 18px 0; border: 1px solid #d7e2ef;">
+
+                    <h3 style="margin-bottom: 10px;">Manual Fallback (Save Existing Links)</h3>
+                    <p class="info-text" style="margin-bottom: 10px;">If auto-create fails, create form/sheet manually in Google and paste links here.</p>
+                    <form id="manual-form" onsubmit="handleManualCreateForm(event)">
+                        <div class="form-group">
+                            <label for="manual-form-type">Form Type</label>
+                            <select id="manual-form-type" required>
+                                <option value="">-- Select Form Type --</option>
+                                <option value="teaching">Teaching Feedback</option>
+                                <option value="co">CO Attainment</option>
+                                <option value="gap">Gap Analysis</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="manual-form-link">Google Form Link</label>
+                            <input
+                                type="url"
+                                id="manual-form-link"
+                                placeholder="https://docs.google.com/forms/..."
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="manual-sheet-link">Google Sheet Link</label>
+                            <input
+                                type="url"
+                                id="manual-sheet-link"
+                                placeholder="https://docs.google.com/spreadsheets/..."
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Manual Form</button>
+                    </form>
+
+                    <hr style="margin: 18px 0; border: 1px solid #d7e2ef;">
+
+                    <h3 style="margin-bottom: 10px;">Export Reports</h3>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <select id="export-subject-select" style="flex:1;min-width:200px;padding:8px;border-radius:4px;border:1px solid #ccc;font-size:1rem"></select>
+                        <button type="button" class="btn btn-secondary" onclick="downloadExcelReport('teaching')">📊 Export Teaching</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadExcelReport('co')">📊 Export CO</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadExcelReport('gap')">📊 Export Gap</button>
+                    </div>
+                </div>
+                <div id="create-message" class="message"></div>
+            </div>
+
+            <!-- My Forms Section -->
+            <div class="section">
+                <h2>My Feedback Forms</h2>
+
+                <!-- Faculty Stats -->
+                <div class="form-card" style="margin-bottom: 14px;">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+                        <div class="stat-card">
+                            <div class="stat-val" style="font-size:1.8rem;color:#1e40af" id="stat-subjects">0</div>
+                            <div class="stat-label">Subjects</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" style="font-size:1.8rem;color:#059669" id="stat-teaching">0</div>
+                            <div class="stat-label">Teaching Feedback</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" style="font-size:1.8rem;color:#7c3aed" id="stat-co">0</div>
+                            <div class="stat-label">CO Attainment</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" style="font-size:1.8rem;color:#dc2626" id="stat-gap">0</div>
+                            <div class="stat-label">Curricular Gap</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject Selector -->
+                <div class="form-card" style="margin-bottom: 14px;">
+                    <h3 style="margin-bottom: 10px;">Select Subject</h3>
+                    <select id="subject-select" class="faculty-subject-select" style="width:100%;padding:8px;font-size:1rem;border-radius:4px;border:1px solid #ccc;margin-bottom:12px"></select>
+                </div>
+
+                <div class="form-card" id="subject-forms-wrap" style="margin-bottom: 14px;"></div>
+
+                <!-- Tabs Navigation -->
+                <div class="form-card" style="margin-bottom: 14px;">
+                    <div style="display:flex;gap:8px;border-bottom:2px solid #e5e7eb;margin-bottom:16px;flex-wrap:wrap">
+                        <button class="tab-btn" style="padding:8px 16px;cursor:pointer;border:none;background:none;font-weight:600;color:#666;border-bottom:3px solid transparent" onclick="switchFacultyTab('overview-detail', this)">📊 Overview</button>
+                        <button class="tab-btn" style="padding:8px 16px;cursor:pointer;border:none;background:none;font-weight:600;color:#666;border-bottom:3px solid transparent" onclick="switchFacultyTab('responses-table-wrap', this)">📋 Responses</button>
+                        <button class="tab-btn" style="padding:8px 16px;cursor:pointer;border:none;background:none;font-weight:600;color:#666;border-bottom:3px solid transparent" onclick="switchFacultyTab('co-results-wrap', this)">📊 CO Attainment</button>
+                        <button class="tab-btn" style="padding:8px 16px;cursor:pointer;border:none;background:none;font-weight:600;color:#666;border-bottom:3px solid transparent" onclick="switchFacultyTab('gap-results-wrap', this)">🔍 Curricular Gap</button>
+                    </div>
+
+                    <!-- Overview Tab -->
+                    <div id="overview-detail" class="tab-pane active" style="display:block;margin-bottom:16px"></div>
+
+                    <!-- Responses Tab -->
+                    <div id="responses-table-wrap" class="tab-pane" style="display:none;margin-bottom:16px"></div>
+
+                    <!-- CO Results Tab -->
+                    <div id="co-results-wrap" class="tab-pane" style="display:none;margin-bottom:16px"></div>
+
+                    <!-- Gap Results Tab -->
+                    <div id="gap-results-wrap" class="tab-pane" style="display:none;margin-bottom:16px"></div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="loading" class="loading" style="display: none;">
+                    <p>Loading your forms...</p>
+                </div>
+
+                <!-- Forms List -->
+                <div id="forms-grid" class="forms-grid">
+                    <!-- Forms will be loaded here by JavaScript -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <p>You haven't created any feedback forms yet. Create one to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="faculty-message" class="message"></div>
+    </div>
+
+    <!-- Firebase SDK (Compat for global firebase.* API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.js?v=20260424"></script>
+    <script src="js/auth.js?v=20260424"></script>
+    <script src="js/faculty.js?v=20260424"></script>
+    <script src="js/app.js?v=20260424"></script>
+
+    <!-- Initialization handled by faculty.js -->
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

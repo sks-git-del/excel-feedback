@@ -1,0 +1,177 @@
+// ==========================================
+// FIRESTORE SECURITY RULES (UPDATED)
+// ==========================================
+// Paste this into Firebase Console -> Firestore -> Rules tab
+// Replace existing rules completely with this content
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ==========================================
+    // SYSTEM COLLECTION (PIN Settings, etc.)
+    // ==========================================
+    match /system/{document=**} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ==========================================
+    // SUBJECTS COLLECTION
+    // ==========================================
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && (
+          request.resource.data.faculty_id == request.auth.uid
+          || isAdmin()
+        );
+
+      allow update, delete: if isSignedIn()
+        && (
+          resource.data.faculty_id == request.auth.uid
+          || isAdmin()
+        );
+    }
+
+    // ==========================================
+    // FEEDBACK_FORMS COLLECTION (NEW)
+    // ==========================================
+    match /feedback_forms/{formId} {
+      allow read: if isSignedIn()
+        && (
+          resource.data.facultyId == request.auth.uid
+          || isAdmin()
+        );
+
+      allow create: if isSignedIn()
+        && (
+          request.resource.data.facultyId == request.auth.uid
+          || isAdmin()
+        );
+
+      allow update, delete: if isSignedIn()
+        && (
+          resource.data.facultyId == request.auth.uid
+          || isAdmin()
+        );
+    }
+
+    // ==========================================
+    // FEEDBACK_SUBMISSIONS COLLECTION
+    // ==========================================
+    match /feedback_submissions/{submissionId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && (
+          request.resource.data.student_uid == request.auth.uid
+          || request.resource.data.student_uid == ""
+          || !("student_uid" in request.resource.data)
+          || isAdmin()
+        );
+
+      allow update, delete: if isSignedIn()
+        && (
+          resource.data.student_uid == request.auth.uid
+          || isAdmin()
+        );
+    }
+
+    // ==========================================
+    // DEFAULT DENY
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+// ==========================================
+// FIRESTORE SECURITY RULES
+// ==========================================
+// Paste this into Firebase Console → Firestore → Rules tab
+// Replace the default rules completely with this content
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // SYSTEM COLLECTION (PIN Settings, etc.)
+    // ==========================================
+    // All authenticated users can read system settings (for PIN checks)
+    // Only admins can write/update system settings
+    match /system/{document=**} {
+      allow read: if request.auth.uid != null;
+      
+      allow write, update, delete: if request.auth.uid != null && 
+                                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    // Users can read/write only their own document
+    // Admins can read all user documents
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth.uid == userId;
+      allow read: if request.auth.uid != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ==========================================
+    // SUBJECTS COLLECTION
+    // ==========================================
+    // Anyone authenticated can read subjects
+    // Only faculty can create subjects
+    // Only subject creator or admin can update/delete
+    match /subjects/{document=**} {
+      allow read: if request.auth.uid != null;
+      
+      allow create: if request.auth.uid != null;
+      
+      allow update, delete: if request.auth.uid != null && 
+                               (request.auth.uid == resource.data.faculty_id ||
+                                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // ==========================================
+    // FEEDBACK_SUBMISSIONS COLLECTION
+    // ==========================================
+    // Users can read submissions
+    // Anyone authenticated can create submissions
+    // Only owner or admin can update/delete
+    match /feedback_submissions/{document=**} {
+      allow read: if request.auth.uid != null;
+      
+      allow create: if request.auth.uid != null;
+      
+      allow update, delete: if request.auth.uid != null;
+    }
+  }
+}
